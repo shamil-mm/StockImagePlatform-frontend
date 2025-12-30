@@ -4,7 +4,7 @@ type Size = 'sm' | 'md' | 'lg';
 
 interface ActionButtonProps {
   icon: React.FC<React.SVGProps<SVGSVGElement>>; // Lucide icon type
-  onClick: () => void;
+  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
   label: string;
   size?: Size;
   className?: string;
