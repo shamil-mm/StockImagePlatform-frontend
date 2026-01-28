@@ -1,73 +1,107 @@
-# React + TypeScript + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# Stock Image Platform - Frontend
 
-Currently, two official plugins are available:
+A modern, responsive web application for browsing, uploading, editing, and downloading stock images. Built with React 19, TypeScript, and Vite, featuring a sleek UI powered by TailwindCSS.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## React Compiler
+- **User Authentication**: Secure login and registration functionality.
+- **Image Gallery**: Browse a diverse collection of stock images with options to view details.
+- **Image Upload**: Seamlessly upload new images to the platform.
+- **Image Editor**: Integrated tools to edit images directly within the browser before use.
+- **Download System**: Dedicated functionality for downloading images.
+- **User Profile**: Manage user information and settings.
+- **Responsive Design**: optimized for various screen sizes using TailwindCSS v4.
+- **Drag & Drop**: Enhanced interactions using `@hello-pangea/dnd`.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech Stack
 
-## Expanding the ESLint configuration
+- **Framework**: [React 19](https://react.dev/)
+- **Build Tool**: [Vite](https://vitejs.dev/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: [TailwindCSS v4](https://tailwindcss.com/)
+- **State Management**: [Redux Toolkit](https://redux-toolkit.js.org/) & [Redux Persist](https://github.com/rt2zz/redux-persist)
+- **Routing**: [React Router DOM v7](https://reactrouter.com/)
+- **API Client**: [Axios](https://axios-http.com/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Notifications**: [SweetAlert2](https://sweetalert2.github.io/)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Project Structure
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+src/
+├── app/          # Application configuration (store hooks, etc.)
+├── modules/      # Feature-based logic
+│   ├── Auth/     # Authentication components
+│   ├── gallery/  # Image display components
+│   └── ...
+├── pages/        # Main route pages
+│   ├── Auth/
+│   ├── Home/
+│   ├── PostImage/
+│   ├── EditImage/
+│   └── ...
+├── services/     # API services and endpoints
+├── shared/       # Shared UI components and utilities
+├── types/        # TypeScript type definitions
+└── utils/        # Helper functions
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Environment Configuration
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Create a `.env` file in the root directory of the project to configure your environment variables. You can use the provided `.env.example` (if available) or create one with the following keys:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+VITE_API_BASE_URL=http://localhost:3000/api
 ```
+
+## ⚡ Getting Started
+
+### Prerequisites
+
+Ensure you have the following installed:
+- [Node.js](https://nodejs.org/) (v16 or higher recommended)
+- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   ```
+2. Navigate to the project directory:
+   ```bash
+   cd FrontEnd
+   ```
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+### Running the Application
+
+To start the development server:
+
+```bash
+npm run dev
+```
+
+The application will typically run at `http://localhost:5173`.
+
+### Building for Production
+
+To create a production build:
+
+```bash
+npm run build
+```
+
+To preview the production build locally:
+
+```bash
+npm run preview
+```
+
+## 📄 License
+
+[MIT](LICENSE)
