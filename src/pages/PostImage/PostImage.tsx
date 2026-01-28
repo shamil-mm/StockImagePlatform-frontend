@@ -3,12 +3,15 @@ import { Upload, X, CheckCircle, Image } from 'lucide-react';
 import { uploadImage } from '@/services/imageService';
 import {ImageData}from "../../types/image"
 import { useAppSelector } from '@/app/hooks';
+import { useNavigate } from 'react-router-dom';
 
 
 const PostImagePage: React.FC = () => {
   const [images, setImages] = useState<ImageData[]>([]);
   const [dragActive, setDragActive] = useState<boolean>(false);
   const [submitted, setSubmitted] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const navigate=useNavigate()
 
 
   const handleDrag = (e: React.DragEvent<HTMLDivElement>): void => {
@@ -66,9 +69,10 @@ const PostImagePage: React.FC = () => {
 
   const handleSubmit = async():Promise<void> => {
     const allTitlesFilled = images.every(img => img.title.trim() !== '');
-
+     if (!images.length || !allTitlesFilled) return;
     if (images.length > 0 && allTitlesFilled) {
-      setSubmitted(true);
+      setIsLoading(true);
+      setSubmitted(false);
       const formData = new FormData();
       images.forEach((img, index) => {
       formData.append('files', img.file); 
@@ -78,11 +82,14 @@ const PostImagePage: React.FC = () => {
       try {
         const response=await uploadImage(formData)
         if(response?.data.message=="Uploaded successfully"){
-          setSubmitted(false);
+          setSubmitted(true);
           setImages([]);
+          navigate("/home")
         }
       } catch (error) {
         console.error('Upload failed', error);
+      }finally{
+        setIsLoading(false)
       }
     }
   };
@@ -136,7 +143,7 @@ const PostImagePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Image Counter */}
+        
           {images.length > 0 && (
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <Image className="w-4 h-4" />
@@ -147,7 +154,7 @@ const PostImagePage: React.FC = () => {
             </div>
           )}
 
-          {/* Images with Titles */}
+
           {images.length > 0 && (
             <div className="space-y-6">
               <h2 className="text-lg font-semibold text-black">Images & Titles</h2>
@@ -205,21 +212,26 @@ const PostImagePage: React.FC = () => {
             <div className="flex gap-4 pt-4">
               <button
                 onClick={handleSubmit}
-                disabled={!canSubmit}
-                className={`px-8 py-3 font-semibold transition-all ${
-                  !canSubmit
+                disabled={!canSubmit || isLoading}
+                className={`px-8 py-3 font-semibold transition-all flex items-center justify-center gap-2 ${
+                  !canSubmit || isLoading
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     : 'bg-black text-white hover:bg-gray-800'
                 }`}
               >
-                {submitted ? (
-                  <span className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5" />
-                    Posted Successfully!
-                  </span>
-                ) : (
-                  `Post ${images.length} ${images.length === 1 ? 'Image' : 'Images'}`
-                )}
+                {isLoading ? (
+                      <>
+                        <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Uploading...
+                      </>
+                    ) : submitted ? (
+                      <>
+                        <CheckCircle className="w-5 h-5" />
+                        Posted Successfully!
+                      </>
+                    ) : (
+                      `Post ${images.length} ${images.length === 1 ? 'Image' : 'Images'}`
+                    )}
               </button>
               
               <button

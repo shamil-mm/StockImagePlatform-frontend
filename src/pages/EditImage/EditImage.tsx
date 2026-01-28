@@ -135,14 +135,14 @@ const EditImage: React.FC = () => {
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
-            className={`relative w-full max-w-md h-64 border-2 border-dashed rounded-lg flex items-center justify-center cursor-pointer transition
+            className={`relative w-full max-w-md h-64 border-2  overflow-hidden border-dashed rounded-lg flex items-center justify-center cursor-pointer transition
               ${isDragging ? 'border-black bg-gray-100' : 'border-gray-300'}
             `}
           >
             <img
               src={previewUrl ?? image.url}
               alt={image.title}
-              className="absolute inset-0 w-full h-full object-cover rounded-lg"
+              className="absolute inset-0 w-full h-full object-contain bg-gray-100 rounded-lg"
             />
 
             <div className="relative z-10 bg-white/80 px-4 py-2 rounded flex items-center gap-2 text-sm font-semibold">
@@ -176,14 +176,23 @@ const EditImage: React.FC = () => {
           <button
             onClick={handleSubmit}
             disabled={submitting || image.title.trim() === ''}
-            className={`px-8 py-3 font-semibold flex items-center gap-2 ${
+            className={`px-8 py-3 font-semibold flex items-center justify-center gap-2 transition-all ${
               submitting || image.title.trim() === ''
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 : 'bg-black text-white hover:bg-gray-800'
             }`}
           >
-            <CheckCircle className="w-5 h-5" />
-            Save Changes
+            {submitting ? (
+              <>
+                <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <CheckCircle className="w-5 h-5" />
+                Save Changes
+              </>
+            )}
           </button>
 
         </div>

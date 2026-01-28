@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ImageGrid from '../../modules/gallery/components/ImageGrid';
 import useImageSelection from '../../modules/gallery/hooks/useImageSelection';
 import { IImage } from '@/types/image';
@@ -12,27 +12,62 @@ import { showConfirmation, showError, showSuccess } from '@/utils/swal';
 const HomePage = () => {
   const { selectedImages, toggleSelection, clearSelection } = useImageSelection();
   const [images, setImages] = useState<IImage[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [isReorderOpen, setIsReorderOpen] = useState(false);
   const [selectedReorder, setSelectedReorder] = useState<IImage[]>([]);
 
   const userId = useAppSelector((state) => state?.auth?.user?.id);
   const navigate = useNavigate();
+  const pageRef = useRef(1);
+  const loadingRef = useRef(false);
+  const loaderRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    const loadImages = async () => {
+
+  const loadImages = async () => {
+      if (loadingRef.current || !hasMore) return;
+       loadingRef.current = true;
+       setLoading(true);
       try {
         setLoading(true);
-        const data = await fetchImages();
-        setImages(data.images);
+        const data = await fetchImages(pageRef.current,9);
+        setImages(prev => [...prev, ...data.images]);
+        setHasMore(data.hasMore);                    
+        pageRef.current += 1;
       } catch (err) {
         console.error(err);
       } finally {
+        loadingRef.current = false;
         setLoading(false);
       }
     };
+
+
+  useEffect(() => {
+    
     loadImages();
   }, []);
+
+  useEffect(() => {
+    if (!hasMore) return;
+  const observer = new IntersectionObserver(
+   ([entry]) => {
+      if (entry.isIntersecting) {
+        loadImages();
+      }
+    },
+  {
+    rootMargin: "200px", 
+  }
+);
+
+
+  if (loaderRef.current) {
+  observer.observe(loaderRef.current);
+}
+
+  return () => observer.disconnect();
+}, [hasMore]);
 
   const handleDownload = (id: string) => console.log('Download image:', id);
 
@@ -73,31 +108,44 @@ const HomePage = () => {
   };
 
   const openSelectedReorderModal = () => {
-    setSelectedReorder(selectedImages);
+    const selectedWithOrder = images
+    .filter(img => selectedImages.some(s => s.publicId === img.publicId))
+    .map(img => ({ ...img }));
+    setSelectedReorder(selectedWithOrder);
     setIsReorderOpen(true);
   };
 
   const saveSelectedReorder = async () => {
-  let updatedImages = [...images];
-  updatedImages = updatedImages.filter(
-    (img) => !selectedReorder.some((s) => s.publicId === img.publicId)
-  );
-  updatedImages = [...selectedReorder, ...updatedImages];
-  updatedImages = updatedImages.map((img, index) => ({ ...img, order: index }));
+  
+  const originalOrders = selectedReorder
+    .map(img => img.order)
+    .sort((a, b) => a - b);
+
+
+  const reorderedWithCorrectOrder = selectedReorder.map((img, index) => ({
+    ...img,
+    order: originalOrders[index],
+  }));
+
+ 
+  const updatedImages = images.map(img => {
+    const updated = reorderedWithCorrectOrder.find(
+      r => r.publicId === img.publicId
+    );
+    return updated ? updated : img;
+  });
 
   setImages(updatedImages);
 
   try {
-    console.log('Updated Images:', updatedImages);
-    await rearrangeOrder(updatedImages);
-    clearSelection()
+    await rearrangeOrder(reorderedWithCorrectOrder);
+    clearSelection();
   } catch (err) {
-    console.error('Failed to update order', err);
+    console.error("Failed to update order", err);
   }
 
   setIsReorderOpen(false);
 };
-
 
   
   const handleDragEnd = (result: DropResult) => {
@@ -150,6 +198,9 @@ const HomePage = () => {
         columns={3}
         onReorder={handleReorder} 
       />
+      <div ref={loaderRef} style={{ height: 1 }} />
+      {loading && <p style={{ textAlign: "center" }}>Loading...</p>}
+      {!hasMore && <p style={{ textAlign: "center" }}>No more images</p>}
 
       
       {isReorderOpen && (

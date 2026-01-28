@@ -1,6 +1,9 @@
 import { IImage } from "@/types/image";
 import api from "./api";
 
+
+
+
 export const uploadImage =async(formData:FormData)=>{
     try {
         return await api.post(`/auth/upload`,formData,{
@@ -14,7 +17,7 @@ export const uploadImage =async(formData:FormData)=>{
     } 
 }
 
-export const fetchImages = async (page = 1, limit = 20) => {
+export const fetchImages = async (page = 1, limit = 9) => {
     try {
         const response= await api.get(`/auth/fetch`,{
             params: { page, limit },
