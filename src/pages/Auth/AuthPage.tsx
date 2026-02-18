@@ -4,12 +4,14 @@ import { login, register } from '@/services/authService';
 import { useAppSelector,useAppDispatch } from '@/app/hooks';
 import { loginSuccess } from '@/modules/auth/authSlice';
 import { useNavigate } from 'react-router-dom';
-import { showError, showInfo } from '@/utils/swal';
-
+import { showError, showInfo,showSuccess } from '@/utils/swal';
+import {validateLogin,validateRegister} from '../../utils/validation'
 
 export default function AuthPages() {
   const [currentPage, setCurrentPage] = useState('login');
   const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -31,10 +33,23 @@ export default function AuthPages() {
       ...formData,
       [e.target.name]: e.target.value
     });
+
+    setErrors((prev) => ({
+      ...prev,
+      [e.target.name]: '',
+    }));
   };
 
   const handleSubmit = async() => {
+    setErrors({});
     if (currentPage === 'login') {
+
+       const validationErrors = validateLogin(formData);
+      if (Object.keys(validationErrors).length > 0) {
+        setErrors(validationErrors);
+        return;
+      }
+    
       console.log('Login submitted:', { email: formData.email, password: formData.password });
       try {
         const result=await login(formData)
@@ -54,13 +69,23 @@ export default function AuthPages() {
       }
  
     } else {
+      const validationErrors = validateRegister(formData);
+
+      if (Object.keys(validationErrors).length > 0) {
+        setErrors(validationErrors);
+        return;
+      }
+      
       try {
         if(formData.password!==formData.rePassword){
           showInfo('Passwords do not match')
           return
         }
         const result=await register(formData)
-        showInfo(result?.data?.message)
+        if(result?.data){
+          showSuccess(result?.data?.message)
+          setCurrentPage("login")
+        }
       } catch (error:any) {
         if(error?.response?.data?.validationError){
           showError(error?.response?.data?.message)
@@ -97,6 +122,11 @@ export default function AuthPages() {
                 <label className="block text-gray-700 text-sm font-bold mb-2">
                   Full Name
                 </label>
+                 {errors.name && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.name}
+                  </p>
+                )}
                 <input
                   type="text"
                   name="name"
@@ -105,12 +135,19 @@ export default function AuthPages() {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-black"
                   placeholder="Enter Your Name"
                 />
+               
+
               </div>
 
               <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2">
                   Phone Number
                 </label>
+                 {errors.phone && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.phone}
+                  </p>
+                )}
                 <input
                   type="tel"
                   name="phone"
@@ -119,6 +156,8 @@ export default function AuthPages() {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-black"
                   placeholder="Enter Your Number"
                 />
+
+               
               </div>
             </>
           )}
@@ -128,6 +167,11 @@ export default function AuthPages() {
             <label className="block text-gray-700 text-sm font-bold mb-2">
               Email Address
             </label>
+            {errors.email && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.email}
+                  </p>
+                )}
             <input
               type="email"
               name="email"
@@ -136,6 +180,8 @@ export default function AuthPages() {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-black"
               placeholder="You@example.com"
             />
+
+               
           </div>
 
           {/* Password Field */}
@@ -143,6 +189,11 @@ export default function AuthPages() {
             <label className="block text-gray-700 text-sm font-bold mb-2">
               Password
             </label>
+            {errors.password && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.password}
+                  </p>
+                )}
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -152,6 +203,7 @@ export default function AuthPages() {
                 className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:border-black"
                 placeholder="••••••••"
               />
+                
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
@@ -168,6 +220,11 @@ export default function AuthPages() {
               <label className="block text-gray-700 text-sm font-bold mb-2">
                 Confirm Password
               </label>
+               {errors.rePassword && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.rePassword}
+                  </p>
+                )}
               <input
                 type={showPassword ? 'text' : 'password'}
                 name="rePassword"
@@ -176,6 +233,7 @@ export default function AuthPages() {
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-black"
                 placeholder="••••••••"
               />
+             
             </div>
           )}
 
@@ -193,7 +251,10 @@ export default function AuthPages() {
               {currentPage === 'login' ? "Don't have an account? " : "Already have an account? "}
             </span>
             <button
-              onClick={() => setCurrentPage(currentPage === 'login' ? 'register' : 'login')}
+              onClick={() => {
+                setErrors({});
+                setCurrentPage(currentPage === 'login' ? 'register' : 'login')
+              }}
               className="text-black font-semibold text-sm hover:underline"
             >
               {currentPage === 'login' ? 'Sign Up' : 'Sign In'}
